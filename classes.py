@@ -38,6 +38,8 @@ class XLSX2XML:
         # self.ru_tokenize = razdel.tokenize
         self.RU_IF_ANNOTATE = False
 
+        self.am_punct_corrections = str.maketrans({':': '։', '`': '՝'}) # заменяем знаки пунктуации
+
         self.header = self.load_aligned()
 
         self.am_word_count = 0 # количество слов в тексте на армянском
@@ -78,6 +80,9 @@ class XLSX2XML:
             # return ''.join(tagged)  # has not been tested
 
     def annotate_am(self, se, sent):
+        # correct some OCR in Armenian text
+        sent = sent.translate(self.am_punct_corrections)
+
         self.am_word_count += len(re.findall(r'\s', sent)) + 1
 
         if re.search(r'\w', sent):
@@ -126,8 +131,8 @@ class XLSX2XML:
                     try:
                         last_word.tail += t
                     except AttributeError:
-                    # если предложение начинается со знака препинания, то не существует w,
-                    # после которого можно вставить токен. Поэтому вставляем его как текст
+                        # если предложение начинается со знака препинания, то не существует w,
+                        # после которого можно вставить токен. Поэтому вставляем его как текст
                         se.text += t
 
             # проверяем, что тексты до и после обработки сходятся
