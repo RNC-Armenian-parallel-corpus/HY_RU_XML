@@ -25,9 +25,11 @@ def timer(func):
 
     return _timer
 
+AM_PUNCT_CORRECTIONS = str.maketrans({':': '։', '`': '՝'}) # заменяем знаки пунктуации
+
 class XLSX2XML:
 
-    def __init__(self, filename, col_mapping, input_path, output_path):
+    def __init__(self, filename, col_mapping, input_path, output_path, ru_if_annotate = False):
         self.FILENAME = filename
         self.INPUT_PATH = input_path
         self.OUTPUT_PATH = output_path
@@ -36,9 +38,7 @@ class XLSX2XML:
         self.LANG_COLUMNS = col_mapping
         self.am_tokenize = razdel.tokenize
         # self.ru_tokenize = razdel.tokenize
-        self.RU_IF_ANNOTATE = False
-
-        self.am_punct_corrections = str.maketrans({':': '։', '`': '՝'}) # заменяем знаки пунктуации
+        self.ru_if_annotate = ru_if_annotate
 
         self.header = self.load_aligned()
 
@@ -81,7 +81,7 @@ class XLSX2XML:
 
     def annotate_am(self, se, sent):
         # correct some OCR in Armenian text
-        sent = sent.translate(self.am_punct_corrections)
+        sent = sent.translate(AM_PUNCT_CORRECTIONS)
 
         self.am_word_count += len(re.findall(r'\s', sent)) + 1
 
@@ -113,7 +113,7 @@ class XLSX2XML:
 
                             ana = ET.SubElement(w, "ana",)
                             ana.set('lex', a.get('lemma', ''))
-                            ana.set('gr', gram_ana)
+                            ana.set('gr', gram_ana.replace(',',' '))
                             ana.set('transl', a.get('trans_en',''))
                             ana.set('lex_translit', self.translit(a.get('lemma','')))
 
@@ -164,7 +164,7 @@ class XLSX2XML:
 
         with open(result_xml, 'w', encoding="utf-8") as f:
             f.write('<?xml version="1.0" encoding="utf-8"?>\n')
-            f.write('<html>\n')
+            f.write('<root>\n')
             f.write('<head>\n')
             f.write('</head>\n')
             f.write('<body>\n')
@@ -172,7 +172,7 @@ class XLSX2XML:
             sent_id = 0
 
             for row in self.ws.iter_rows(min_row=2, values_only=True):
-                if row:
+                if row and all(row):
 
                     sent_id += 1
                     para = ET.Element("para")
@@ -186,7 +186,7 @@ class XLSX2XML:
                     f.write(ET.tostring(para, method='xml', encoding='unicode')+'\n')
 
             f.write('</body>\n')
-            f.write('</html>\n')
+            f.write('</root>\n')
 
             self.stats = (self.FILEPATH, str(sent_id), str(self.am_word_count + self.ru_word_count))
 

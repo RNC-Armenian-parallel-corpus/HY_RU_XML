@@ -25,8 +25,19 @@ if __name__ == '__main__':
     INPUT_DIR = os.path.join('texts', 'input')
     OUTPUT_DIR = os.path.join('texts', 'output')
 
-    files = list(filter(lambda x: x.endswith('.xlsx'), os.listdir(INPUT_DIR)))
+    zips = list(filter(lambda x: x.endswith('.zip'), os.listdir(INPUT_DIR)))
 
+    # если в папке input есть .zip архивы, то вытаскиваем из них все файлы в input, добавляя название архива в начало
+    if zips:
+        import zipfile
+        for z in zips:
+            with zipfile.ZipFile(os.path.join(INPUT_DIR, z), 'r') as zipdata:
+                for zipinfo in zipdata.infolist():
+                    # This will do the renaming
+                    zipinfo.filename = z.replace('.zip', '') + '__' + zipinfo.filename
+                    zipdata.extract(zipinfo, path=INPUT_DIR)
+
+    files = list(filter(lambda x: x.endswith('.xlsx'), os.listdir(INPUT_DIR)))
     if files:
 
         from classes import XLSX2XML
