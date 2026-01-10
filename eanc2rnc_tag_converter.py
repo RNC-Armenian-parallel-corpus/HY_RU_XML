@@ -17,10 +17,10 @@ def convert_tags(tag_string):
                 pos = tag_list[0]
                 lex_gram = ','.join(tag_list[1:])
                 return convert_pos(pos) + ',' + convert_lex_gram(lex_gram)
-        else: # only POS tag (same as "elif len(tag_list) == 1") 
+        else: # only POS tag (same as "elif len(tag_list) == 1")
             pos = tag_list[0]
             return convert_pos(pos)
-    
+
 def convert_pos(pos_tag):
     pos_dict = {
         # format is "EANC: RNC"
